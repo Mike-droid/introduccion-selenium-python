@@ -70,3 +70,93 @@ Sobre Selenium Grid:
 - [Cypress.io](https://www.cypress.io/)
 
 Ninguna es mejor que la otra, todo depende de tus necesidades y condiciones.
+
+## Preparar entorno de trabajo
+
+### Configurar entorno de trabajo
+
+Deberemos instalar:
+
+- [Python](https://www.python.org/downloads/)
+- Selenium -> En la terminal (tipo unix) `pip3 install selenium`
+- PyUnitReport -> En la terminal (tipo unix) `pip3 install pyunitreport`
+
+### Hola mundo
+
+Cosas importantes de Unittest (PyTest)
+
+- *Test Fixture*: preparaciones para antes y después de la prueba
+- *Test Case*: unidad de código a probar
+- *Test Suite*: colección de Test Cases
+- *Test Runner*: orquestador de la ejecución
+- *Test Report*: resumen de resultados
+
+#### Creando entorno virtual en python 3.8
+
+1. Instalar: `sudo apt-get install python3.8-venv`
+2. Ejecutar: `sudo python3.8 -m venv nombreDelProyecto`
+3. Crear alias: `alias avenv="source venv/bin/activate"` (venv es el nombre del proyecto)
+4. Ejecutar alias: `avenv`
+
+[Para instalar Chrome en Ubuntu 20.04](https://linuxize.com/post/how-to-install-google-chrome-web-browser-on-ubuntu-20-04/)
+
+`wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb`
+
+`sudo apt install ./google-chrome-stable_current_amd64.deb`
+
+***IMPORTANTE***: Para poder instalar con pip las librerías solamente en el entorno virutal de Python, hay que modificar el archivo "pyvenv.cfg"
+
+```python
+home = /usr/bin
+include-system-site-packages = true #!debe estar en true
+version = 3.8.5
+```
+
+Si no deja modificar, ejecutar: `sudo chown -r nombre_de_usuario directorio_del_proyecto`, en mi caso fue: `sudo chown -r mike_angel_rm /home/mike_angel_rm/personalProjects/CursoIntroduccionSeleniumPython`
+
+Apagamos el entorno virtual y lo volvemos a encender. Instalamos las librerías.
+
+Si el código no funciona, esto funcionó para mí en WSL2:
+
+hello_world.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class HelloWorld(unittest.TestCase):
+
+  @classmethod
+  def setUpClass(cls): # Qué es lo que se va a hacer
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options) #Ruta de driver en unix
+    driver = cls.driver # Para no tener que escribir self driver en cada línea
+    #driver.implicity_wait(10)
+
+
+  def test_hello_world(self):
+    driver = self.driver
+    driver.get('https://www.platzi.com')
+
+
+  def test_visit_wikipedia(self):
+    driver = self.driver
+    driver.get('https://www.wikipedia.org')
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit() # Cerramos la ventana del navegador después de cada prueba
+
+
+if __name__ == '__main__':
+  # output es el nombre del reporte
+  unittest.main(verbosity=2 , testRunner= HTMLTestRunner(output = 'reportes', report_name='hello-world-report'))
+```
+
+Es ***importante*** tener chrome/chromium y chromedriver instalados en WSL2.
