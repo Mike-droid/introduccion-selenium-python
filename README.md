@@ -669,3 +669,83 @@ class NavigationTest(unittest.TestCase):
 if __name__ == '__main__':
   unittest.main(verbosity = 2)
 ```
+
+## Sincronizar pruebas
+
+### Demora implícita y explícita
+
+Las pausas son buenas para el asincronismo.
+
+Tenemos 2 tipos de demoras en Selenium:
+
+- Implícita: busca uno o varios elementos en el DOM si no se encuentran disponibles por la cantidad de tiempo asignado. -> Ejemplo: `implicitly_wait(10)`
+- Explícita: utiliza condiciones de espera determinados y continúa hasta que se cumplan.
+
+### Condicionales esperadas
+
+[PDF con Condicionales esperadas](https://static.platzi.com/media/public/uploads/archivo_complementario_condicionales_esperadas_7204dca9-869e-4e49-a1a6-43e0c0c224e8.pdf)
+
+waits.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait #Nos ayudará con las esperas explícitas
+from selenium.webdriver.support import expected_conditions as EC
+
+class ExplicitWaitTests(unittest.TestCase):
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('http://demo-store.seleniumacademy.com/')
+
+
+  def test_account_link(self):
+    WebDriverWait(self.driver, 10).until(lambda s: s.find_element_by_id('select-language').get_attribute('length') == '3')
+    # esperará 10 segundos hasta que se cumpla la condición, está en una lambda function
+
+    account = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.LINK_TEXT, 'ACCOUNT')))
+    account.click()
+
+  def test_create_new_customer(self):
+    self.driver.find_element_by_link_text('ACCOUNT').click()
+
+    my_account = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.LINK_TEXT, 'My Account')))
+    my_account.click()
+
+    create_account_button = WebDriverWait(self.driver, 20).until(EC.element_to_be_clickable((By.LINK_TEXT, 'CREATE AN ACCOUNT')))
+    create_account_button.click()
+
+    WebDriverWait(self.driver, 10).until(EC.title_contains('Create New Customer Account'))
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Condicionales esperadas, tabla
+
+Expected Condition|Descripción|Ejemplo
+---|---|---
+element_to_be_clickable(locator)|Espera a que el elemento sea visible y habilitado para hacer clic en el mismo|WebDriverWait(self.driver,10).until(expected_conditions.element_to_be_clickable((By.NAME,“accept_button”)))
+element_to_be_selected(element)|Espera a que un elemento sea seleccionado|subscription = self.driver.find_element_by_name(“terms”). WebDriverWait(self.driver, 10).until(expected_conditions.element_to_be_selected(terms)))
+invisibility_of_element_located(locator)|Espera a que un elemento no sea visible o no se encuentre presente en el DOM|WebDriverWait(self.driver,10).until(expected_conditions.invisibility_of_element_located((By.ID,“loading_banner”)))
+presence_of_all_elements_located(locator)|Espera a que por lo menos uno de los elementos que se indican coincida con los presentes en el sitio|WebDriverWait(self.driver,10).until(expected_conditions.presence_of_all_elements_located((By.CLASS_NAME,“input-text”)))
+presence_of_element_located(locator)|Espera a que un elemento sea visible se encuentre presente en el DOM|WebDriverWait(self.driver,10).until(expected_conditions.presence_of_element_located((By.ID,“search-bar”)))
+text_to_be_present_in_element(locator,text_)|Espera a que un elemento con el texto indicado se encuentre presente|WebDriverWait(self.driver,10).until(expected_conditions.text_to_be_present_in_element((By.ID,“seleorder”),“high”))
+title_contains(title)|Espera a que la página contenga en el título exactamente como es indicado|WebDriverWait(self.driver, 10).until(expected_conditions.title_contains(“Welcome”))
+title_is(title)|Espera a que la página tenga un título idéntico a como es indicado|WebDriverWait(self.driver, 10).until(expected_conditions.title_is(“Welcome to Platzi”))
+visibility_of(element)|Espera a que el elemento indicado esté en el DOM, sea visible, su alto y ancho sean mayores a cero|first_name = self.driver.find_element_by_id(“firstname”) WebDriverWait(self.driver, 10).until(expected_conditions.visibility_of(first_name))
+visibility_of_element_located(locator)|Espera a que el elemento indicado por su selector esté en el DOM, sea visible y que su alto y ancho sean mayores a cero|WebDriverWait(self.driver,10).until(expected_conditions.visibility_of_element_located((By.ID,“firstname”)))
