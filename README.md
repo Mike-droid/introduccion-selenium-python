@@ -432,3 +432,240 @@ is_selected()|Verifica si el elemento está seleccionado, para el caso de checkb
 send_keys(value)|Simula escribir o presionar teclas en un elemento|email_field.send_keys(‘team@platzi.com’)
 submit()|Envía un formulario o confirmación en un text area|search_field.submit()
 value_of_css_property(property_name)|Obtiene el valor de una propiedad CSS del elemento|header.value_of_css_property(‘background-color’)
+
+## Interactuar con elementos
+
+### Manejar form, textbox, chckbox y radio button
+
+Pudimos simular un registro de un usuario en la página con el siguiente código:
+
+register_new_user.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class RegisterNewUser(unittest.TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('http://demo-store.seleniumacademy.com/')
+
+
+  def test_new_user(self):
+    driver = self.driver
+    driver.find_element_by_xpath('/html/body/div/div[2]/header/div/div[2]/div/a/span[2]').click() #Hacemos click en el elemento
+    driver.find_element_by_link_text('Log In').click()
+
+    create_account_button = driver.find_element_by_xpath('//*[@id="login-form"]/div/div[1]/div[2]/a/span/span')
+    self.assertTrue(create_account_button.is_displayed() and create_account_button.is_enabled())
+    create_account_button.click()
+
+    self.assertEqual('Create New Customer Account' , driver.title) #¿El título de la página web es igual al título del driver?
+
+    #Creamos las variables para encontrar los elementos
+    first_name = driver.find_element_by_id('firstname')
+    middle_name = driver.find_element_by_id('middlename')
+    last_name = driver.find_element_by_id('lastname')
+    email_address = driver.find_element_by_id('email_address')
+    news_letter_suscription = driver.find_element_by_id('is_subscribed')
+    password = driver.find_element_by_id('password') #! No utilizar datos reales por la sensibilidad de los datos
+    confirm_password = driver.find_element_by_id('confirmation')
+    submit_button = driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div/div/div[2]/form/div[2]/button/span/span')
+
+    #Verificamos que los elementos estén habilitados
+    self.assertTrue(first_name.is_enabled()
+    and middle_name.is_enabled()
+    and last_name.is_enabled()
+    and email_address.is_enabled()
+    and news_letter_suscription.is_enabled()
+    and password.is_enabled()
+    and confirm_password.is_enabled()
+    and submit_button.is_enabled())
+
+    #Pretendemos llenar los campos
+    first_name.send_keys('Test')
+    middle_name.send_keys('Test')
+    last_name.send_keys('Test')
+    email_address.send_keys('Test@testingmail.com')
+    password.send_keys('Test')
+    confirm_password.send_keys('Test')
+    news_letter_suscription.click()
+    submit_button.click()
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Manejar dropdown y listas
+
+Lo que hicismos en esta clase fue tomar las opciones de un dropdown:
+
+select_language.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import Select #Así podremos elegir las opciones de un dropdown
+
+class LanguageOptions(unittest.TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('http://demo-store.seleniumacademy.com/')
+
+
+  def test_select_language(self):
+    exposed_options = ['English', 'French', 'German'] # Los lenguajes disponibles de la página web, en ese orden
+    active_options = []
+
+    select_language = Select(self.driver.find_element_by_id('select-language'))
+
+    self.assertEqual(3, len(select_language.options))
+
+    for option in select_language.options:
+      active_options.append(option.text) #Agregamos el texto a la lista
+
+    self.assertListEqual(exposed_options, active_options) # Comparamos ambas listas, si son idénticas, la prueba pasará
+
+    self.assertEqual('English', select_language.first_selected_option.text) #Verificamos que 'English' es la primera opción por defecto
+
+    select_language.select_by_visible_text('German') #Verificamos que existe la opción con texto 'German'
+
+    self.assertTrue('store=german' in self.driver.current_url) #Esta es parte de la URL con idioma en alemán
+
+    select_language = Select(self.driver.find_element_by_id('select-language'))
+    select_language.select_by_index(0) #Índex 0 es English, 1 es French y 2 es German
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Manejar alert y pop-up
+
+En esta clase logramos obtener el texto de un alert y cerrarlo.
+
+alerts.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class CompareProducts(unittest.TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('http://demo-store.seleniumacademy.com/')
+
+
+  def test_compare_products_removal_alert(self):
+    driver = self.driver
+    search_field = driver.find_element_by_name('q')
+    search_field.clear() # Limpiamos el texto que haya en la barra de búsqueda, como buena práctica
+
+    search_field.send_keys('tee') #Simulamos que tecleamos 'tee'
+    search_field.submit()
+
+    driver.find_element_by_class_name('link-compare').click()
+    driver.find_element_by_link_text('Clear All').click()
+
+    alert = driver.switch_to.alert #Como saldra un alert, le decimos al navegador que centre su atención aquí
+    alert_text = alert.text
+
+    self.assertEqual('Are you sure you would like to remove all products from your comparison?', alert_text) #Validamos si el texto del alert es idéntico al que tenemos en la variable
+
+    alert.accept() #Hacemos click en el botón de aceptar
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Automatizar navegación
+
+[23 comandos esenciales de Selenium WebDriver](https://www.techbeamers.com/important-selenium-webdriver-commands/)
+
+En esta clase pudimos navegar en la web de manera automática
+
+automatic_navigation.py
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class NavigationTest(unittest.TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('https://google.com')
+
+  def test_browser_navigation(self):
+    driver = self.driver
+
+    search_field = driver.find_element_by_name('q')
+    search_field.clear()
+    search_field.send_keys('platzi')
+    search_field.submit()
+
+    driver.back() #Retroceder en la navegación web
+    driver.forward() #Avanzar en la navegación web
+    driver.refresh() #Actualizar ventana del navegador
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
