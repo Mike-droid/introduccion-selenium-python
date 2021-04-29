@@ -13,17 +13,17 @@ class HelloWorld(unittest.TestCase):
     options.add_argument('--disable-dev-shm-usage')
     cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options) #Ruta de navegador en unix
     driver = cls.driver # Para no tener que escribir self driver en cada línea
-    #driver.implicity_wait(10)
+    #driver.implicitly_wait(15)
 
 
   def test_hello_world(self):
     driver = self.driver
-    driver.get('https://www.platzi.com')
+    driver.get("https://www.platzi.com")
 
 
   def test_visit_wikipedia(self):
     driver = self.driver
-    driver.get('https://www.wikipedia.org')
+    driver.get("https://www.wikipedia.org")
 
 
   @classmethod
