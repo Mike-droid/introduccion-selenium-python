@@ -316,6 +316,7 @@ if __name__ == '__main__':
 ```
 
 searchTests.py:
+
 ```python
 import unittest
 from pyunitreport import HTMLTestRunner
@@ -749,3 +750,307 @@ title_contains(title)|Espera a que la página contenga en el título exactamente
 title_is(title)|Espera a que la página tenga un título idéntico a como es indicado|WebDriverWait(self.driver, 10).until(expected_conditions.title_is(“Welcome to Platzi”))
 visibility_of(element)|Espera a que el elemento indicado esté en el DOM, sea visible, su alto y ancho sean mayores a cero|first_name = self.driver.find_element_by_id(“firstname”) WebDriverWait(self.driver, 10).until(expected_conditions.visibility_of(first_name))
 visibility_of_element_located(locator)|Espera a que el elemento indicado por su selector esté en el DOM, sea visible y que su alto y ancho sean mayores a cero|WebDriverWait(self.driver,10).until(expected_conditions.visibility_of_element_located((By.ID,“firstname”)))
+
+## Retos
+
+[Sitio web de los retos](https://the-internet.herokuapp.com/)
+
+### Agregar y eliminar elementos
+
+Pudimos agregar y eliminar elementos con una página web de prueba, la cual es [esta](https://the-internet.herokuapp.com/add_remove_elements/)
+
+add_remove_elements.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class AddRemoveElements(unittest.TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('https://the-internet.herokuapp.com/add_remove_elements/')
+
+
+  def test_add_remove(self):
+    driver = self.driver
+
+    elements_added = int(input('How many elements will you add?: '))
+    elements_removed = int(input('How many elements will you remove?: '))
+    total_elements = elements_added - elements_removed
+
+    add_button = driver.find_element_by_xpath('//*[@id="content"]/div/button')
+
+    for i in range(elements_added):
+      add_button.click() #Hacemos click en cada botón
+
+    for i in range(elements_removed):
+      try:
+        #delete_button = driver.find_element_by_xpath('//*[@id="elements"]/button[1]')
+        delete_button = driver.find_element_by_class_name('added-manually')
+        delete_button.click()
+      except:
+        print("You're trying to delete more elements than the existent")
+        break
+
+    if total_elements > 0:
+      print(f'There are {total_elements} elements on the screen')
+    else:
+      print(f'There are 0 elements on the screen')
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Elementos dinámicos
+
+La página usada en esta clase es [esta](https://the-internet.herokuapp.com/disappearing_elements)
+
+**Contexto:** En esta página hay varios botones, 1 de ellos a veces aparece y a veces no.
+
+Creamos un script que recargará la página tantas veces como sea necesario hasta que el botón esté visible.
+
+dynamic_elements.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class DynamicElements(unittest.TestCase):
+
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('https://the-internet.herokuapp.com/disappearing_elements')
+
+
+  def test_name_elements(self):
+    driver = self.driver
+
+    options = []
+    menu = 5
+    tries = 1
+
+    while len(options) < 5:
+      options.clear() #Limpiamos la lista en caso de reiniciar el bucle while
+
+      for i in range(menu):
+        try:
+          option_name = driver.find_element_by_xpath(f'//*[@id="content"]/div/ul/li[{i + 1}]/a')
+          options.append(option_name.text)
+          print(options)
+        except: #Entrará aquí si solo encuentra 4 elemetos, ya que range(menu) llega a 5
+          print(f'Option number {i + 1} is NOT FOUND')
+          tries += 1
+          driver.refresh()
+
+    print(f'Finished in {tries} tries')
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Controles dinámicos
+
+**IMPORTANTE**: TODAS LAS FUNCIONES DE SELENIUM DEBEN EMPEZAR CON 'test', de lo contrario, no se ejecutarán.
+
+Esta vez usamos [esta página web](https://the-internet.herokuapp.com/dynamic_controls)
+
+dynamic_controls.py:
+
+```python
+import unittest
+from pyunitreport import HTMLTestRunner
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class DynamicControls(unittest.TestCase):
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('https://the-internet.herokuapp.com/dynamic_controls')
+
+
+  def test_addRemoveCheckBox(self):
+    driver = self.driver
+
+    #Conseguir los elemetos
+    check_box = driver.find_element_by_css_selector('#checkbox')
+    add_remove_button = driver.find_element_by_css_selector('#checkbox-example > button')
+
+    #Interactuar con los elementos
+    check_box.click()
+    add_remove_button.click()
+    WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#checkbox')))
+    add_remove_button.click()
+
+
+  def test_write_in_input_field(self):
+    driver = self.driver
+
+    #Conseguir los elemetos
+    enable_disable_button = driver.find_element_by_css_selector('#input-example > button')
+    input_field = driver.find_element_by_css_selector('#input-example > input[type=text]')
+
+    #Interactuar con los elementos
+    enable_disable_button.click()
+    WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#input-example > button')))
+    input_field.clear() #En caso de que tenga texto escrito
+    input_field.send_keys('Platzi')
+    enable_disable_button.click()
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Typos
+
+Vamos a valiar que el texto de un sitio web sea idéntico a uno que esperamos.
+
+typos.py:
+
+```python
+import unittest
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class Typos(unittest.TestCase):
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('https://the-internet.herokuapp.com/typos')
+
+
+  def test_find_typo(self):
+    driver = self.driver
+
+    paragraph_to_check = driver.find_element_by_css_selector('#content > div > p:nth-child(3)')
+    text_to_check = paragraph_to_check.text
+    print(f'Text to check: {text_to_check}')
+    print(f'Paragraph to check {paragraph_to_check.text}')
+
+    tries = 1
+    found = False
+    correct_text = "Sometimes you'll see a typo, other times you won't."
+
+    while text_to_check != correct_text:
+      paragraph_to_check = driver.find_element_by_css_selector('#content > div > p:nth-child(3)')
+      text_to_check = paragraph_to_check.text
+      tries += 1
+      driver.refresh()
+
+    while not found:
+      if text_to_check == correct_text:
+        driver.refresh()
+        found = True
+
+    self.assertEqual(found, True)
+
+    print(f'It took {tries} tries to find the typo')
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
+
+### Ordenas tablas
+
+Usamos [esta página para esta clase](https://the-internet.herokuapp.com/tables)
+
+Logramos conseguir la información de la primera tabla con este código:
+
+tables.py
+
+```python
+import unittest
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class Typos(unittest.TestCase):
+  @classmethod
+  def setUpClass(cls):
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    cls.driver = webdriver.Chrome(executable_path = '/usr/bin/chromedriver' , options=options)
+    driver = cls.driver
+    driver.get('https://the-internet.herokuapp.com/tables')
+
+
+  def test_sort_tables(self):
+    driver = self.driver
+
+    table_data = [[] for i in range(5)]
+    print(table_data)
+
+    for i in range(5):
+      header = driver.find_element_by_xpath(f'//*[@id="table1"]/thead/tr/th[{i + 1}]/span')
+      table_data[i].append(header.text)
+
+      for j in range(4):
+        row_data = driver.find_element_by_xpath(f'//*[@id="table1"]/tbody/tr[{j + 1}]/td[{i + 1}]')
+        table_data[i].append(row_data.text)
+
+    print(table_data)
+
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.driver.quit()
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity = 2)
+```
