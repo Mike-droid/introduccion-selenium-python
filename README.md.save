@@ -1311,3 +1311,34 @@ Prueba: Flujo en Mercado Libre
 5. Filtrar por ubicación 'Bogotá'.
 6. Ordenar de mayor a menor precio.
 7. Obtener el nombre y precio de los primeros 5 artículos.
+
+## Examen
+
+- ¿Con qué me permite interactuar la clase WebElement de Selenium?: elementos del sitio web
+- ¿Cuál es la diferencia entre DDT y TDD?: DDT es testing con código ya escrito. TDD es código basado en pruebas para pasarlas
+- ¿Qué librerías complementan Selenium para generar pruebas efectivas?: unittest pyunitreport ddt
+- ¿Qué acciones podemos utilizar para interactuar con un alert de JavaScript?: Aceptar, extraer texto y enviar texto XXXX aceptar, cerrar ventana, maximizar ventana XXXX cambiar de pestaña, aceptar y rechazar XXXX
+- ¿Cómo valido que el botón con nombre "signup" está a la vista y habilitado?: el que está en singular xd
+- ¿Qué es y para qué nos sirven las test suites?: colección para validar comportamiento
+- ¿Cuándo es conveniente utilizar try y except en nuestra prueba?: no conocemos el sitio y es dinámico
+- ¿Qué hace el siguiente código?: espera hasta 10 segundos el texto account
+- ¿Por qué no debería automatizar o hacer testing en sitios que explícitamente lo prohíben?: ética
+- ¿Cuándo es buena idea usar XPath como selector?: cuando no hay otro selector único
+- ¿Qué lenguaje no es soportado oficialmente con Selenium?: Dart
+- ¿Qué hace el siguiente código?: introduce texto y presiona enter
+- ¿Qué es una expected condition (condición esperada)?: intervención humana XXXX únicamente XXXX condiciones predefinidas o personalizadas a las que el script espera XXXX definir errores XXXX
+- ¿Qué assertion te permite validar el que el título del sitio web es el siguiente?🚀Platzi: ‎Cursos Online Profesionales de Tecnología: assertEqual
+
+- ¿Cómo extraemos el valor del atributo ‘autocomplete’ del siguiente elemento?: name y attribute
+- ¿Cuál es el principal beneficio de Page Object Model (POM)?: mejor mantenimiento
+- Son debilidades de Selenium: manejo de asincronismo y generación de reportes
+- ¿Qué hace el siguiente código?: busca nombre y selecciona valor
+- Tienes una barra de búsqueda cuyo nombre es name="q" ¿Con qué código accedes a esta?: find element by name q
+- ¿Qué hace el siguiente código?: espera hasta 20 segundos a que cargue algún elemento
+- ¿Cuáles son los componentes vigentes de la suite de Selenium?: webdriver, ide, grid
+- ¿Qué es Selenium?; suite para automatizar el navegador
+- Son todos métodos para automatizar la navegación: back, forward, refresh, find_eelement_by XXXX back, forward, navigate, refresh, close XXXX el que tiene get url XXXX
+- ¿Cuáles son consideraciones al presentar una prueba técnica?: tener claro los pasos y pensar como usuario
+- ¿Por qué debemos utilizar la menor cantidad de esperas implícitas posibles?: para que no sea lenta
+- ¿Con qué me permite interactuar la clase WebDriver de Selenium?: navegador; ventana, alerts
+- Los métodos setUp() y tearDown() son para: ejectuar todas las pruebas en una sola instancia del navegador XXXX formalidad XXXX realizar acciones específicas
